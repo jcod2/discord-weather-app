@@ -1,0 +1,46 @@
+name: CI/CD - Webapp
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Lint with ruff
+        run: uv run ruff check .
+
+  build:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Build Docker image
+        run: docker build -t discord-weather-script:${{ github.sha }} .
+
+  # Deploy job — fill in once you've picked a hosting target (e.g. Railway, Fly.io, a VPS over SSH).
+  # Example using Railway CLI is commented out below as a starting point.
+  #
+  # deploy:
+  #   needs: build
+  #   if: github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4.2.2
+  #     - name: Deploy to Railway
+  #       run: |
+  #         curl -fsSL https://railway.app/install.sh | sh
+  #         railway up --service webapp
+  #       env:
+  #         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

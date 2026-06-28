@@ -1,0 +1,14 @@
+[project]
+name = "discord-weather-script"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "flask>=3.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.4.0",
+]

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather Icon Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Weather <span>Icon</span> Dashboard</h1>
+    <span class="timestamp">{{ now }}</span>
+  </header>
+
+  <div class="stats">
+    <div class="card">
+      <div class="card-label">Total Runs</div>
+      <div class="card-value">{{ total }}</div>
+    </div>
+    <div class="card success">
+      <div class="card-label">Successful</div>
+      <div class="card-value green">{{ success_count }}</div>
+    </div>
+    <div class="card fail">
+      <div class="card-label">Failed</div>
+      <div class="card-value red">{{ fail_count }}</div>
+    </div>
+    <div class="card accent2">
+      <div class="card-label">Top Condition</div>
+      <div class="card-value" style="font-size:1.1rem; padding-top:0.4rem;">
+        {{ top_condition['condition'] | title if top_condition else '—' }}
+      </div>
+    </div>
+  </div>
+
+  {% if last %}
+  <div class="last-run">
+    <div class="status-dot {{ 'ok' if last['success'] else 'err' }}"></div>
+    <div class="last-run-info">
+      <h2>{{ last['city'] }} — {{ last['description'] | title }}, {{ last['temp'] }}°C</h2>
+      <p>{{ last['timestamp'] }} · season: {{ last['season'] }} · overlay: {{ last['overlay'] }}
+        {% if last['error'] %}<span class="error-text"> · {{ last['error'] }}</span>{% endif %}
+      </p>
+    </div>
+    <span class="badge">{{ 'success' if last['success'] else 'failed' }}</span>
+  </div>
+  {% endif %}
+
+  {% if sparkline %}
+  <div class="sparkline-wrap">
+    <div class="sparkline-label">Last {{ sparkline | length }} runs</div>
+    <div class="sparkline">
+      {% for s in sparkline %}
+        <div class="spark-bar {{ 'ok' if s else 'err' }}"></div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="table-wrap">
+    <div class="table-header">Run History (last 50)</div>
+    {% if history %}
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Timestamp</th>
+          <th>City</th>
+          <th>Condition</th>
+          <th>Temp</th>
+          <th>Season</th>
+          <th>Overlay</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for run in history %}
+        <tr>
+          <td class="muted">{{ run['id'] }}</td>
+          <td>{{ run['timestamp'][:19].replace('T', ' ') }}</td>
+          <td>{{ run['city'] }}</td>
+          <td>{{ run['description'] | title }}</td>
+          <td>{{ run['temp'] }}°C</td>
+          <td class="season-{{ run['season'] }}">{{ run['season'] }}</td>
+          <td class="muted">{{ run['overlay'] }}</td>
+          <td>
+            <span class="pill {{ 'ok' if run['success'] else 'err' }}">
+              {{ '✓ ok' if run['success'] else '✗ fail' }}
+            </span>
+            {% if run['error'] %}
+            <div class="error-text">{{ run['error'] }}</div>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No runs yet. Run update_icon.py to get started.</div>
+    {% endif %}
+  </div>
+
+</div>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
