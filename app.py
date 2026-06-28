@@ -2,6 +2,7 @@ import os
 import sqlite3
 from datetime import datetime, timezone
 from flask import Flask, render_template, g
+from zoneinfo import ZoneInfo
 
 app = Flask(__name__)
 DB_PATH = os.getenv("DB_PATH", "history.db")
@@ -69,7 +70,7 @@ def index():
         fail_count=fail_count,
         sparkline=sparkline,
         top_condition=top_condition,
-        now=datetime.now(timezone.utc).strftime("%H:%M UTC"),
+        now=datetime.now(ZoneInfo("Europe/Dublin")).strftime("%H:%M %Z"),
     )
 
 
