@@ -27,20 +27,31 @@ jobs:
       - uses: actions/checkout@v4.2.2
 
       - name: Build Docker image
-        run: docker build -t discord-weather-script:${{ github.sha }} .
+        run: docker build -t discord-weather-app .
 
-  # Deploy job — fill in once you've picked a hosting target (e.g. Railway, Fly.io, a VPS over SSH).
-  # Example using Railway CLI is commented out below as a starting point.
-  #
-  # deploy:
-  #   needs: build
-  #   if: github.ref == 'refs/heads/main'
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4.2.2
-  #     - name: Deploy to Railway
-  #       run: |
-  #         curl -fsSL https://railway.app/install.sh | sh
-  #         railway up --service webapp
-  #       env:
-  #         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/discord-weather-app
+
+            # Pull latest code
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/${{ github.repository }} .
+            else
+              git pull origin main
+            fi
+
+            # Rebuild and restart containers
+            docker-compose down
+            docker-compose up --build -d
